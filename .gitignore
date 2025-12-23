@@ -1,0 +1,16 @@
+# Node related
+/old/
+/dist/
+/node_modules/
+
+# Testing script
+example.ts
+
+# Testing files
+run.bat
+avatar.png
+bush.wav
+test.pcm
+
+# Crash dump
+crash.log

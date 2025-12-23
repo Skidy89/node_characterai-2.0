@@ -1,0 +1,46 @@
+{
+  "name": "node_characterai",
+  "version": "2.0.0-beta.13",
+  "description": "Unofficial Character AI wrapper for node.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "npx tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/realcoloride/node_characterai.git"
+  },
+  "keywords": [
+    "character",
+    "ai",
+    "api",
+    "ai",
+    "node",
+    "characterai",
+    "js",
+    "cai"
+  ],
+  "author": "realcoloride",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/realcoloride/node_characterai/issues"
+  },
+  "homepage": "https://github.com/realcoloride/node_characterai#readme",
+  "devDependencies": {
+    "@types/node": "^24.9.2",
+    "@types/ws": "^8.5.12",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "@livekit/rtc-node": "^0.13.20",
+    "@types/json-bigint": "^1.0.4",
+    "@types/uuid": "^10.0.0",
+    "json-bigint": "^1.0.0",
+    "naudiodon": "^2.3.6",
+    "node-cache": "^5.1.2",
+    "sharp": "^0.34.4",
+    "uuid": "^13.0.0",
+    "ws": "^8.18.0"
+  }
+}
