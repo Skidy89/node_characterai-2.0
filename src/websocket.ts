@@ -142,10 +142,12 @@ export class CAIWebsocket extends EventEmitter {
                     // if turn is NOT present, push to queue
                     streamedMessage?.push(message);
 
-                    const condition = options.waitForAIResponse ? !turn?.author?.is_human && isFinal : isFinal;
+                    // For DM messages, we need to wait for update_turn command which contains the actual AI response
+                    // add_turn is just the echo of our sent message
+                    const isAIResponse = options.waitForAIResponse ? command === "update_turn" && !turn?.author?.is_human && isFinal : isFinal;
                     
                     // if expectedReturnCommand or condition is met
-                    if ((expectedReturnCommand && command == expectedReturnCommand) || condition)
+                    if ((expectedReturnCommand && command == expectedReturnCommand) || isAIResponse)
                         disconnectHandlerAndResolve();
                 }
             };
