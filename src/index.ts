@@ -1,9 +1,8 @@
 // client
-export * from "./client";
+export * from "./client.js";
 
 // /chat
-export * from './chat/dmConversation';
-export * from './chat/message';
-
+export * from './chat/dmConversation.js';
+export * from './chat/message.js';
 // /character
-export * from './character/character';
+export * from './character/character.js';

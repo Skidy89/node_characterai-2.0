@@ -1,4 +1,4 @@
-import { CAIImage } from "../utils/image";
+import { CAIImage } from "../utils/image.js";
 
 export enum CharacterVote {
     None,

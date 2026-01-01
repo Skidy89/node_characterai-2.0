@@ -1,11 +1,11 @@
-import Parser from './parser';
-import { PrivateProfile } from './profile/privateProfile';
-import Requester from './requester';
-import { CAIWebsocket, CAIWebsocketConnectionType, ICAIWebsocketCommand, ICAIWebsocketMessage } from './websocket';
-import DMConversation from './chat/dmConversation';
-import { Character } from './character/character';
+import Parser from './parser.js';
+import { PrivateProfile } from './profile/privateProfile.js';
+import Requester from './requester.js';
+import { CAIWebsocket, CAIWebsocketConnectionType, ICAIWebsocketCommand, ICAIWebsocketMessage } from './websocket.js';
+import DMConversation from './chat/dmConversation.js';
+import { Character } from './character/character.js';
 import { v4 as uuidv4 } from 'uuid';
-import { Conversation } from './chat/conversation';
+import { Conversation } from './chat/conversation.js';
 
 const fallbackEdgeRollout = '60';
 
@@ -23,9 +23,16 @@ export class CharacterAI {
 
     public automaticallyReconnectWebsockets: boolean = true;
     private conversations: Map<string, Conversation> = new Map();
+    private maxConversationsCache: number = 50; // Limit to prevent unbounded growth
     
     public markChatAsActive(conversation: Conversation) {
         this.conversations.set(conversation.chatId, conversation);
+        
+        // Clean up old conversations if limit exceeded
+        if (this.conversations.size > this.maxConversationsCache) {
+            const firstKey = this.conversations.keys().next().value;
+            if (firstKey) this.conversations.delete(firstKey);
+        }
     }
     
     private async resurrectActiveConversations() {
@@ -86,6 +93,9 @@ export class CharacterAI {
 
     private async openWebsockets() {
         try {
+            // Close existing websockets first to prevent memory leaks
+            this.closeWebsockets();
+            
             const request = await this.requester.request("https://character.ai/", {
                 method: "GET",
                 includeAuthorization: false
@@ -190,6 +200,7 @@ export class CharacterAI {
     unauthenticate() {
         this.checkAndThrow(CheckAndThrow.RequiresAuthentication);
         this.closeWebsockets();
+        this.conversations.clear();
         this.token = "";
     }
 

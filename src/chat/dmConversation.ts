@@ -1,9 +1,9 @@
 
-import { CheckAndThrow } from "../client";
-import Parser from "../parser";
-import Warnings from "../warnings";
-import { Conversation, ICAIMessageSending } from "./conversation";
-import { CAIMessage } from "./message";
+import { CheckAndThrow } from "../client.js";
+import Parser from "../parser.js";
+import Warnings from "../warnings.js";
+import { Conversation, ICAIMessageSending } from "./conversation.js";
+import { CAIMessage } from "./message.js";
 import { v4 as uuidv4 } from 'uuid';
 
 const generateBaseMessagePayload = (

@@ -1,6 +1,6 @@
-import { CharacterAI, CheckAndThrow } from "../client";
-import Parser from "../parser";
-import { getterProperty, hiddenProperty } from "../utils/specable";
+import { CharacterAI, CheckAndThrow } from "../client.js";
+import Parser from "../parser.js";
+import { getterProperty, hiddenProperty } from "../utils/specable.js";
 
 export class PrivateProfile {
     @hiddenProperty

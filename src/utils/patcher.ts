@@ -1,5 +1,5 @@
-import { CharacterAI } from "../client";
-import { CAIImage } from "./image";
+import { CharacterAI } from "../client.js";
+import { CAIImage } from "./image.js";
 
 export default class ObjectPatcher {
     static patch(client: CharacterAI, instance: any, object: Record<string, any>) {

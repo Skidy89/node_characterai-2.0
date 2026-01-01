@@ -1,4 +1,4 @@
-import DMConversation from "./dmConversation";
+import DMConversation from "./dmConversation.js";
 
 export default interface IDMCollection {
     totalDMCount: number;

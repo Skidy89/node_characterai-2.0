@@ -1,6 +1,6 @@
-import { EventEmitter } from "stream";
+import { EventEmitter } from "node:events";
 import { WebSocket } from "ws";
-import Parser from "./parser";
+import Parser from "./parser.js";
 
 export enum CAIWebsocketConnectionType {
     Disconnected = 0,
@@ -153,13 +153,23 @@ export class CAIWebsocket extends EventEmitter {
             };
             
             this.on("rawMessage", handler);
-            this.websocket?.send(options.data);
+            try {
+                this.websocket?.send(options.data);
+            } catch (error) {
+                this.off("rawMessage", handler);
+                clearTimeout(timeout);
+                reject(error);
+            }
         })
     }
     close() {
         this.removeAllListeners();
-        this.websocket?.removeAllListeners();
-        this.websocket?.close();
+        if (this.websocket) {
+            this.websocket.removeAllListeners();
+            this.websocket.close();
+            this.websocket = undefined;
+        }
+        this._connected = false;
     }
 
     constructor(options: ICAIWebsocketCreation) {

@@ -1,7 +1,7 @@
-import { CharacterAI } from "../client";
-import { hiddenProperty } from "../utils/specable";
-import DMConversation from "./dmConversation";
-import { CAIMessage } from "./message";
+import { CharacterAI } from "../client.js";
+import { hiddenProperty } from "../utils/specable.js";
+import DMConversation from "./dmConversation.js";
+import { CAIMessage } from "./message.js";
 
 export class PreviewDMConversation extends DMConversation {
     // preview_turns

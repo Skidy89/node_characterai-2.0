@@ -1,4 +1,4 @@
-import { EventEmitter } from "stream";
+import { EventEmitter } from "node:events";
 
 // makes it hidden from debug
 const serializableFieldsSymbol = Symbol('serializableFields');

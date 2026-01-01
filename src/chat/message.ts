@@ -1,12 +1,12 @@
-import { getterProperty, hiddenProperty, Specable } from "../utils/specable";
-import { CharacterAI, CheckAndThrow } from "../client";
-import { CAIImage } from "../utils/image";
-import ObjectPatcher from "../utils/patcher";
-import { Candidate, EditedCandidate } from "./candidate";
-import { Conversation } from "./conversation";
-import Parser from "../parser";
-import DMConversation from "./dmConversation";
-import Warnings from "../warnings";
+import { getterProperty, hiddenProperty, Specable } from "../utils/specable.js";
+import { CharacterAI, CheckAndThrow } from "../client.js";
+import { CAIImage } from "../utils/image.js";
+import ObjectPatcher from "../utils/patcher.js";
+import { Candidate, EditedCandidate } from "./candidate.js";
+import { Conversation } from "./conversation.js";
+import Parser from "../parser.js";
+import DMConversation from "./dmConversation.js";
+import Warnings from "../warnings.js";
 
 export class CAIMessage extends Specable {
     @hiddenProperty

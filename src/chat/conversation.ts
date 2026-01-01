@@ -1,10 +1,10 @@
-import { getterProperty, hiddenProperty, Specable } from "../utils/specable";
-import { CharacterAI, CheckAndThrow } from "../client";
-import Parser from "../parser";
-import { CAIImage } from "../utils/image";
-import ObjectPatcher from "../utils/patcher";
-import Warnings from "../warnings";
-import { CAIMessage } from "./message";
+import { getterProperty, hiddenProperty, Specable } from "../utils/specable.js";
+import { CharacterAI, CheckAndThrow } from "../client.js";
+import Parser from "../parser.js";
+import { CAIImage } from "../utils/image.js";
+import ObjectPatcher from "../utils/patcher.js";
+import Warnings from "../warnings.js";
+import { CAIMessage } from "./message.js";
 
 export interface ICAIConversationCreation {
     messages?: any[]

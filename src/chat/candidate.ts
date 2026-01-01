@@ -1,8 +1,8 @@
-import { CharacterAI, CheckAndThrow } from "../client";
-import Parser from "../parser";
-import ObjectPatcher from "../utils/patcher";
-import { getterProperty, hiddenProperty, Specable } from "../utils/specable";
-import { CAIMessage } from "./message";
+import { CharacterAI, CheckAndThrow } from "../client.js";
+import Parser from "../parser.js";
+import ObjectPatcher from "../utils/patcher.js";
+import { getterProperty, hiddenProperty, Specable } from "../utils/specable.js";
+import { CAIMessage } from "./message.js";
 
 export enum AnnotationStars {
     Remove = 0,

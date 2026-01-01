@@ -1,7 +1,7 @@
-import { CharacterAI, CheckAndThrow } from "../client";
-import Parser from '../parser';
+import { CharacterAI, CheckAndThrow } from "../client.js";
+import Parser from '../parser.js';
 import fs from 'fs';
-import { getterProperty, hiddenProperty, Specable } from '../utils/specable';
+import { getterProperty, hiddenProperty, Specable } from '../utils/specable.js';
 import sharp, { Sharp } from 'sharp';
 
 const neoImageEndpoint = "https://characterai.io/i/200/static/avatars/";

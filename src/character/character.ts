@@ -1,11 +1,11 @@
-import DMConversation from "../chat/dmConversation";
-import { CharacterAI, CheckAndThrow } from "../client";
-import Parser from "../parser";
-import { CAIImage as CAIImage } from "../utils/image";
-import ObjectPatcher from "../utils/patcher";
-import { getterProperty, hiddenProperty, Specable } from "../utils/specable";
+import DMConversation from "../chat/dmConversation.js";
+import { CharacterAI, CheckAndThrow } from "../client.js";
+import Parser from "../parser.js";
+import { CAIImage as CAIImage } from "../utils/image.js";
+import ObjectPatcher from "../utils/patcher.js";
+import { getterProperty, hiddenProperty, Specable } from "../utils/specable.js";
 import { v4 as uuidv4 } from 'uuid';
-import { CharacterVisibility, CharacterVote, ICharacterModificationOptions } from "./characterEnums";
+import { CharacterVisibility, CharacterVote, ICharacterModificationOptions } from "./characterEnums.js";
 
 export interface ICharacterGroupChatCreation {
     name: string,
