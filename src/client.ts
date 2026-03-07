@@ -102,7 +102,8 @@ export class CharacterAI {
             });
             const { headers } = request;
 
-            let edgeRollout = headers.get("set-cookie")?.match(/edge_rollout=([^;]+)/)?.[1];
+            let cookies = headers.get("set-cookie");
+            let edgeRollout = cookies?.match(/edge_rollout=([^;]+)/)?.[1] ?? cookies?.match(/deployment-target=([^;]+)/)?.[1] ?? fallbackEdgeRollout;
             if (!edgeRollout) {
                 if (!request.ok) throw Error("Could not get edge rollout");
                 edgeRollout = fallbackEdgeRollout;
