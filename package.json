@@ -44,7 +44,6 @@
     "@types/json-bigint": "^1.0.4",
     "@types/uuid": "^10.0.0",
     "json-bigint": "^1.0.0",
-    "naudiodon": "^2.3.6",
     "node-cache": "^5.1.2",
     "sharp": "^0.34.4",
     "uuid": "^13.0.0",
