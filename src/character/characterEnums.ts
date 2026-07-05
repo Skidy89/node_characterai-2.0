@@ -1,42 +1,42 @@
 import { CAIImage } from "../utils/image.js";
 
 export enum CharacterVote {
-    None,
-    Like,
-    Dislike
-};
+  None,
+  Like,
+  Dislike,
+}
 
 export enum CharacterVisibility {
-    Private = "PRIVATE",
-    Unlisted = "UNLITSTED",
-    Public = "PUBLIC",
-};
+  Private = "PRIVATE",
+  Unlisted = "UNLITSTED",
+  Public = "PUBLIC",
+}
 
 export interface ICharacterCreationExtraOptions {
-    tagline?: string;
-    description?: string;
+  tagline?: string;
+  description?: string;
 
-    definition?: string,
-    keepCharacterDefintionPrivate?: boolean,
+  definition?: string;
+  keepCharacterDefintionPrivate?: boolean;
 
-    allowDynamicGreeting?: boolean,
+  allowDynamicGreeting?: boolean;
 
-    voiceOrId?: string,
-    avatar?: CAIImage
+  voiceOrId?: string;
+  avatar?: CAIImage;
 }
 
 export interface ICharacterModificationOptions {
-    newName?: string,
-    newGreeting?: string,
-    newVisbility?: CharacterVisibility
-    
-    newTagline?: string;
-    newDescription?: string;
+  newName?: string;
+  newGreeting?: string;
+  newVisbility?: CharacterVisibility;
 
-    newDefinition?: string,
-    keepCharacterDefintionPrivate?: boolean,
-    enableDynamicGreeting?: boolean,
+  newTagline?: string;
+  newDescription?: string;
 
-    voiceOrId?: string,
-    editAvatar: boolean
+  newDefinition?: string;
+  keepCharacterDefintionPrivate?: boolean;
+  enableDynamicGreeting?: boolean;
+
+  voiceOrId?: string;
+  editAvatar: boolean;
 }

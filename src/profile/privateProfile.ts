@@ -3,42 +3,49 @@ import Parser from "../parser.js";
 import { getterProperty, hiddenProperty } from "../utils/specable.js";
 
 export class PrivateProfile {
-    @hiddenProperty
-    protected client: CharacterAI;
+  @hiddenProperty
+  protected client: CharacterAI;
 
-    // username
-    public username = "";
+  // username
+  public username = "";
 
-    // id
-    @hiddenProperty
-    private id = 0;
-    @getterProperty
-    public get userId() { return this.id; }
-    public set userId(value) { this.id = value; }
+  // id
+  @hiddenProperty
+  private id = 0;
+  @getterProperty
+  public get userId() {
+    return this.id;
+  }
+  public set userId(value) {
+    this.id = value;
+  }
 
-    async refreshProfile() {
-        this.client.checkAndThrow(CheckAndThrow.RequiresAuthentication);
+  async refreshProfile() {
+    this.client.checkAndThrow(CheckAndThrow.RequiresAuthentication);
 
-        const request = await this.client.requester.request("https://plus.character.ai/chat/user/", {
-            method: 'GET',
-            includeAuthorization: true
-        });
-        const response = await Parser.parseJSON(request);
+    const request = await this.client.requester.request(
+      "https://plus.character.ai/chat/user/",
+      {
+        method: "GET",
+        includeAuthorization: true,
+      },
+    );
+    const response = await Parser.parseJSON(request);
 
-        if (!request.ok) throw new Error(response);
-        const { user } = response.user;
+    if (!request.ok) throw new Error(response);
+    const { user } = response.user;
 
-        this.loadFromInformation(user);
-        this.loadFromInformation(user.user);
-    }
+    this.loadFromInformation(user);
+    this.loadFromInformation(user.user);
+  }
 
-    loadFromInformation(information: any) {
-        if (!information) return;
-        
-        Object.assign(this, information);
-    }
+  loadFromInformation(information: any) {
+    if (!information) return;
 
-    constructor(client: CharacterAI) {
-        this.client = client;
-    }
+    Object.assign(this, information);
+  }
+
+  constructor(client: CharacterAI) {
+    this.client = client;
+  }
 }
