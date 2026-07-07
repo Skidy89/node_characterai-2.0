@@ -157,7 +157,7 @@ export class CAIWebsocket extends EventEmitter {
         this.pending.delete(id);
 
         reject(new Error("Timeout"));
-      }, 30000);
+      }, 15000);
 
       this.pending.set(id, {
         resolve,
