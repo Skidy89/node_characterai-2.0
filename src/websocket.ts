@@ -129,6 +129,10 @@ export class CAIWebsocket extends EventEmitter {
     this.processPacket(pending, message);
   }
   private processPacket(pending: PendingRequest, message: any) {
+    // Unauthorized request for users under 18 years old
+    if (message.comment && message.command === "neo_error") {
+      throw new Error(`${message.comment}`);
+    }
     const turn = message.turn;
 
     const isFinal = turn?.candidates?.[0]?.is_final ?? false;
