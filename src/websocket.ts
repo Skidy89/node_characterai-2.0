@@ -23,6 +23,7 @@ export interface ICAIWebsocketMessage {
   waitForAIResponse: boolean;
   streaming: boolean; // streams give an output of an array instead of the message straight up
   expectedRequestId?: string;
+  fireAndForget?: boolean; // if true, the request will not be added to the pending requests and will not be awaited for a response
 }
 export interface ICAIWebsocketCommand {
   command: string;
@@ -156,7 +157,10 @@ export class CAIWebsocket extends EventEmitter {
       const id = options.expectedRequestId;
 
       if (!id) return reject(new Error("Missing request id"));
-
+      if (options.fireAndForget) {
+        this.websocket!.send(options.data);
+        return resolve(undefined);
+      }
       const timeout = setTimeout(() => {
         this.pending.delete(id);
 

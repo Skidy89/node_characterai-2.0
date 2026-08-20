@@ -200,8 +200,47 @@ export class CharacterAI {
     const response = await Parser.parseJSON(request);
     if (!request.ok) throw new Error(response);
 
-    const chatObject = response.chats[0];
+    if (!response.chats || response.chats.length === 0) {
+      const ourChat = uuidv4();
+      const wsRequest = await this.sendDMWebsocketCommandAsync({
+        command: "create_chat",
+        originId: "Android",
+        streaming: true,
 
+        payload: {
+          chat_type: "TYPE_ONE_ON_ONE",
+
+          chat: {
+            chat_id: ourChat,
+            creator_id: this.myProfile.userId.toString(),
+            character_id: characterId,
+            type: "TYPE_ONE_ON_ONE",
+            visibility: "VISIBILITY_PRIVATE",
+          },
+
+          with_greeting: false,
+          with_pre_generated_history: false,
+        },
+      });
+      const request = await this.requester.request(
+        `https://neo.character.ai/chat/${ourChat}/?load_metadata=true`,
+        {
+          method: "GET",
+          includeAuthorization: true,
+        },
+      );
+      
+      const response = await Parser.parseJSON(request);
+      if (!request.ok) throw new Error(response);
+
+      const chatObject = response.chat;
+
+      const conversation = new DMConversation(this, chatObject);
+      await conversation.refreshMessages();
+
+      return conversation;
+    }
+    const chatObject = response.chats[0];
     const conversation = new DMConversation(this, chatObject);
     await conversation.refreshMessages();
 
