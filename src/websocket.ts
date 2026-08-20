@@ -32,6 +32,7 @@ export interface ICAIWebsocketCommand {
   waitForAIResponse?: boolean;
   streaming: boolean;
   payload: any;
+  fireAndForget?: boolean; // if true, the request will not be added to the pending requests and will not be awaited for a response
 }
 interface PendingRequest {
   resolve(value: any): void;

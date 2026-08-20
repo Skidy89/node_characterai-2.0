@@ -71,6 +71,7 @@ export class CharacterAI {
         waitForAIResponse: options.waitForAIResponse ?? true,
         expectedRequestId: requestId,
         streaming: options.streaming,
+        fireAndForget: options.fireAndForget ?? false,
         data: Parser.stringify({
           command: options.command,
           origin_id: options.originId,
@@ -202,11 +203,11 @@ export class CharacterAI {
 
     if (!response.chats || response.chats.length === 0) {
       const ourChat = uuidv4();
-      const wsRequest = await this.sendDMWebsocketCommandAsync({
+      await this.sendDMWebsocketCommandAsync({
         command: "create_chat",
         originId: "Android",
         streaming: true,
-
+        fireAndForget: true,
         payload: {
           chat_type: "TYPE_ONE_ON_ONE",
 
