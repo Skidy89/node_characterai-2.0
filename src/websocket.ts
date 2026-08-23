@@ -159,6 +159,9 @@ export class CAIWebsocket extends EventEmitter {
 
       if (!id) return reject(new Error("Missing request id"));
       if (options.fireAndForget) {
+        // clean up maps of the request if it is fire and forget
+        this.pending.delete(id);
+        
         this.websocket!.send(options.data);
         return resolve(undefined);
       }
