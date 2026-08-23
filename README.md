@@ -1,9 +1,11 @@
-> [!WARNING]
-> 🔨 **You are looking at a development work in progress branch.** If you want to let me know your feedback or report issues, [click here to open the related issue](https://github.com/realcoloride/node_characterai/issues/180).
+> This is a fork of [realcoloride/node_characterai](https://github.com/realcoloride/node_characterai/tree/2.0), focused on optimization, performance improvements, and removing unnecessary code and dependencies.
 >
-> 🔧 **Also, this documentation is not complete yet** so please report on your issues or feedback.
+> If you need a feature that isn't available in this fork, please open a pull request. Alternatively, you can use the original [realcoloride/node_characterai](https://github.com/realcoloride/node_characterai/tree/2.0) package, which provides the full feature set.
+>
+> 🔧 **Please note:** This documentation is still a work in progress. If you encounter missing or unclear information, feel free to report it through an issue or provide feedback.
+>
+> # Character AI Node Client
 
-# Character AI Node Client
 
 <a href="character.ai"><img src="https://github.com/user-attachments/assets/61536b0a-3c93-4001-891f-f01dba68f553" aria-label="character.ai"></a>
 ###### _The logo was recolored to be visible on both Dark and Light environments._
