@@ -21,9 +21,9 @@ export enum ConversationVisibility {
 }
 
 export interface ICAIMessageSending {
-  manualTurn: boolean;
+  manualTurn?: boolean;
   image?: CAIImage;
-  getMyMessageInstead: boolean;
+  getMyMessageInstead?: boolean;
 }
 
 export class Conversation extends Specable {

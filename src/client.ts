@@ -230,7 +230,7 @@ export class CharacterAI {
           includeAuthorization: true,
         },
       );
-      
+
       const response = await Parser.parseJSON(request);
       if (!request.ok) throw new Error(response);
 

@@ -4,11 +4,9 @@ import Warnings from "../warnings.js";
 import { Conversation, ICAIMessageSending } from "./conversation.js";
 import { CAIMessage } from "./message.js";
 import { v4 as uuidv4 } from "uuid";
-
-const generateBaseMessagePayload = (
-  characterId: string,
-  username: string, // our username
-) => {
+type CAIImageUploadResponse = { status: string; value: string };
+type CAIAttachment = { type: "TYPE_IMAGE"; url: string };
+const generateBaseMessagePayload = (characterId: string, username: string) => {
   return {
     character_id: characterId,
     selected_language: "",
@@ -44,27 +42,40 @@ const generateBaseMessagePayload = (
 const generateBaseSendingPayload = (
   message: string,
   characterId: string,
-  username: string, // our username
+  username: string,
   turnId: string,
   chatId: string,
   userId: number,
-  imageUrl?: string,
+  attachments?: { type: "TYPE_IMAGE"; url: string }[],
 ) => {
   return {
     ...generateBaseMessagePayload(characterId, username),
+
     num_candidates: 1,
+
     turn: {
-      turn_key: { turn_id: turnId, chat_id: chatId },
-      author: { author_id: userId.toString(), is_human: true, name: username },
+      turn_key: {
+        turn_id: turnId,
+        chat_id: chatId,
+      },
+
+      author: {
+        author_id: userId.toString(),
+        is_human: true,
+        name: username,
+      },
+
       candidates: [
         {
           candidate_id: turnId,
           raw_content: message,
-          ...(imageUrl ? { tti_image_rel_path: imageUrl } : {}),
         },
       ],
+
       primary_candidate_id: turnId,
     },
+
+    ...(attachments?.length ? { attachments } : {}),
   };
 };
 
@@ -158,42 +169,110 @@ export default class DMConversation extends Conversation {
     if (!request.ok) throw new Error(response);
   }
 
+  async uploadImageToServer(
+    input: string | Buffer,
+  ): Promise<CAIImageUploadResponse> {
+    this.client.checkAndThrow(CheckAndThrow.RequiresAuthentication);
+
+    let data: any;
+    let contentType = "image/jpeg";
+
+    if (typeof input === "string") {
+      const response = await fetch(input);
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch image: ${response.status}`);
+      }
+
+      contentType = response.headers.get("content-type") ?? "image/jpeg";
+
+      data = Buffer.from(await response.arrayBuffer());
+    } else {
+      data = input;
+    }
+
+    const image = new Blob([data], {
+      type: contentType,
+    });
+
+    const uploadRequest = await this.client.requester.request(
+      "https://neo.character.ai/image/upload_private_image",
+      {
+        method: "POST",
+        includeAuthorization: true,
+        formData: {
+          image,
+        },
+      },
+    );
+
+    const uploadResponse = await Parser.parseJSON(uploadRequest);
+
+    if (uploadResponse.status !== "OK") {
+      throw new Error("Image upload failed");
+    }
+
+    return {
+      status: uploadResponse.status,
+      value: uploadResponse.value,
+    };
+  }
   async sendMessage(
     content: string,
     options?: ICAIMessageSending,
+    context?: {
+      image?: CAIImageUploadResponse;
+    },
   ): Promise<CAIMessage> {
     this.client.checkAndThrow(CheckAndThrow.RequiresAuthentication);
 
-    if (this.frozen) Warnings.show("sendingFrozen");
+    if (this.frozen) {
+      Warnings.show("sendingFrozen");
+    }
 
-    // manual turn is FALSE by default
+    const turnId = uuidv4();
+
+    const attachments: CAIAttachment[] | undefined = context?.image
+      ? [
+          {
+            type: "TYPE_IMAGE",
+            url: context.image.value,
+          },
+        ]
+      : undefined;
+
+    const payload = generateBaseSendingPayload(
+      content,
+      this.characterId,
+      this.client.myProfile.username,
+      turnId,
+      this.chatId,
+      this.client.myProfile.userId,
+      attachments,
+    );
+
     const request: any = await this.client.sendDMWebsocketCommandAsync(
       {
         command:
           (options?.manualTurn ?? false)
             ? "create_chat"
             : "create_and_generate_turn",
+
         originId: "Android",
+
         expectedReturnCommand: undefined,
+
         waitForAIResponse: true,
+
         streaming: false,
-        payload: generateBaseSendingPayload(
-          content,
-          this.characterId,
-          this.client.myProfile.username,
-          uuidv4(),
-          this.chatId,
-          this.client.myProfile.userId,
-          options?.image?.endpointUrl ?? "",
-        ),
+
+        payload,
       },
       this,
     );
 
-    // here we should receive OUR message not theirs if selected. im not sure how to do this but i will see
     return this.addMessage(new CAIMessage(this.client, this, request.turn));
   }
-
   async regenerateMessage(message: CAIMessage) {
     this.client.checkAndThrow(CheckAndThrow.RequiresAuthentication);
 

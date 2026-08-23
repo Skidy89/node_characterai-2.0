@@ -161,7 +161,7 @@ export class CAIWebsocket extends EventEmitter {
       if (options.fireAndForget) {
         // clean up maps of the request if it is fire and forget
         this.pending.delete(id);
-        
+
         this.websocket!.send(options.data);
         return resolve(undefined);
       }
@@ -169,7 +169,7 @@ export class CAIWebsocket extends EventEmitter {
         this.pending.delete(id);
 
         reject(new Error("Timeout"));
-      }, 15000);
+      }, 25000);
 
       this.pending.set(id, {
         resolve,
