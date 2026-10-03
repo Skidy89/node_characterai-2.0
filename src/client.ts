@@ -18,7 +18,26 @@ export enum CheckAndThrow {
   RequiresAuthentication = 0,
   RequiresNoAuthentication,
 }
-
+type CAICharacterFetchResponse = {
+  chat: {
+    chat_id: string
+    create_time: string
+    creator_id: string
+    model_preference_version: string
+    preferred_model_type: string
+    state: string
+    type: string
+    visibility: string
+  }
+  metadata: {
+    chat_id: string
+  }
+}
+type CAICharacterVoiceOverrideResponse = {
+  character_external_id: string;
+  replay_voice_id: string | null;
+  voice_id: string | null;
+};
 export class CharacterAI {
   private token: string = "";
   public get authenticated() {
@@ -102,6 +121,7 @@ export class CharacterAI {
       waitForAIResponse: true,
       expectedRequestId: requestId,
       streaming: options.streaming,
+      fireAndForget: options.fireAndForget ?? false,
       data: Parser.stringify({
         command: options.command,
         origin_id: options.originId,
@@ -187,7 +207,21 @@ export class CharacterAI {
 
     return new Character(this, response.character);
   }
+  private async fetchCharacterByChatId(chat_id: string) {
+    this.checkAndThrow(CheckAndThrow.RequiresAuthentication);
+    
+    const request = await this.requester.request(
+      `https://neo.character.ai/chat/${chat_id}/?load_metadata=true`,
+      {
+        method: "GET",
+        includeAuthorization: true,
+      },
+    );
+    const response = await Parser.parseJSON(request);
+    if (!request.ok) throw new Error("Failed to fetch character");
 
+    return response as CAICharacterFetchResponse;
+  }
   async fetchLatestDMConversationWith(characterId: string) {
     this.checkAndThrow(CheckAndThrow.RequiresAuthentication);
 
@@ -208,6 +242,7 @@ export class CharacterAI {
         originId: "Android",
         streaming: true,
         fireAndForget: true,
+        expectedReturnCommand: "create_chat_response",
         payload: {
           chat_type: "TYPE_ONE_ON_ONE",
 
@@ -223,16 +258,7 @@ export class CharacterAI {
           with_pre_generated_history: false,
         },
       });
-      const request = await this.requester.request(
-        `https://neo.character.ai/chat/${ourChat}/?load_metadata=true`,
-        {
-          method: "GET",
-          includeAuthorization: true,
-        },
-      );
-
-      const response = await Parser.parseJSON(request);
-      if (!request.ok) throw new Error(response);
+      const response = await this.fetchCharacterByChatId(ourChat);
 
       const chatObject = response.chat;
 

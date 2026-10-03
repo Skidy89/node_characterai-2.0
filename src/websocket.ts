@@ -23,7 +23,7 @@ export interface ICAIWebsocketMessage {
   waitForAIResponse: boolean;
   streaming: boolean; // streams give an output of an array instead of the message straight up
   expectedRequestId?: string;
-  fireAndForget?: boolean; // if true, the request will not be added to the pending requests and will not be awaited for a response
+  fireAndForget?: boolean; // if true, the request is sent without waiting unless an expected return command is provided
 }
 export interface ICAIWebsocketCommand {
   command: string;
@@ -32,7 +32,7 @@ export interface ICAIWebsocketCommand {
   waitForAIResponse?: boolean;
   streaming: boolean;
   payload: any;
-  fireAndForget?: boolean; // if true, the request will not be added to the pending requests and will not be awaited for a response
+  fireAndForget?: boolean; // if true, the request is sent without waiting unless an expected return command is provided
 }
 interface PendingRequest {
   resolve(value: any): void;
@@ -135,6 +135,17 @@ export class CAIWebsocket extends EventEmitter {
     if (message.comment && message.command === "neo_error") {
       throw new Error(`${message.comment}`);
     }
+
+    if (
+      pending.options.expectedReturnCommand &&
+      message.command === pending.options.expectedReturnCommand
+    ) {
+      clearTimeout(pending.timeout);
+      this.pending.delete(message.request_id);
+      pending.resolve(message);
+      return;
+    }
+
     const turn = message.turn;
 
     const isFinal = turn?.candidates?.[0]?.is_final ?? false;
@@ -158,10 +169,7 @@ export class CAIWebsocket extends EventEmitter {
       const id = options.expectedRequestId;
 
       if (!id) return reject(new Error("Missing request id"));
-      if (options.fireAndForget) {
-        // clean up maps of the request if it is fire and forget
-        this.pending.delete(id);
-
+      if (options.fireAndForget && !options.expectedReturnCommand) {
         this.websocket!.send(options.data);
         return resolve(undefined);
       }

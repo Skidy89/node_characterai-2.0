@@ -215,7 +215,7 @@ export default class DMConversation extends Conversation {
     return {
       status: uploadResponse.status,
       value: uploadResponse.value,
-    };
+    } as CAIImageUploadResponse;
   }
   async sendMessage(
     content: string,
@@ -279,7 +279,6 @@ export default class DMConversation extends Conversation {
     const request: any = await this.client.sendDMWebsocketCommandAsync({
       command: "generate_turn_candidate",
       originId: "Android",
-
       streaming: false,
       payload: generateBaseRegeneratingPayload(
         this.characterId,
