@@ -95,7 +95,11 @@ export class CAIImage extends Specable {
   private makeImage(target: Buffer | ArrayBuffer | string) {
     this.clearImage();
     this.image = new Transformer(
-      typeof target === "string" ? fs.readFileSync(target) : Buffer.from(target),
+      typeof target === "string"
+        ? fs.readFileSync(target)
+        : Buffer.from(
+            target instanceof ArrayBuffer ? new Uint8Array(target) : target,
+          ),
     );
   }
   private async downloadImageBuffer(

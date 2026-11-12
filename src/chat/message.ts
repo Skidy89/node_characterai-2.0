@@ -1,6 +1,5 @@
 import { getterProperty, hiddenProperty, Specable } from "../utils/specable.js";
 import { CharacterAI, CheckAndThrow } from "../client.js";
-import { CAIImage } from "../utils/image.js";
 import ObjectPatcher from "../utils/patcher.js";
 import { Candidate, EditedCandidate } from "./candidate.js";
 import { Conversation } from "./conversation.js";
@@ -13,9 +12,6 @@ export class CAIMessage extends Specable {
   private client: CharacterAI;
   @hiddenProperty
   private conversation: Conversation;
-
-  @hiddenProperty
-  private image?: CAIImage;
 
   // turn_key
   @hiddenProperty
@@ -87,7 +83,7 @@ export class CAIMessage extends Specable {
   async getAuthorProfile() {
     this.client.checkAndThrow(CheckAndThrow.RequiresAuthentication);
 
-    const { authorUsername, isHuman } = this;
+    const { isHuman } = this;
     if (!isHuman)
       throw Error(
         "Failed to fetch author because this is message was not made by a human.",
@@ -151,11 +147,6 @@ export class CAIMessage extends Specable {
   }
   private getCandidateByTurnId(turnId: string) {
     const candidate = this.candidateIdToCandidate[turnId];
-    if (!candidate) throw new Error("Candidate not found");
-    return candidate;
-  }
-  private getCandidateByIndex(index: number) {
-    const candidate = Object.values(this.candidateIdToCandidate)[index];
     if (!candidate) throw new Error("Candidate not found");
     return candidate;
   }

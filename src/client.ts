@@ -33,11 +33,6 @@ type CAICharacterFetchResponse = {
     chat_id: string
   }
 }
-type CAICharacterVoiceOverrideResponse = {
-  character_external_id: string;
-  replay_voice_id: string | null;
-  voice_id: string | null;
-};
 export class CharacterAI {
   private token: string = "";
   public get authenticated() {

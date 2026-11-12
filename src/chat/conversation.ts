@@ -235,8 +235,8 @@ export class Conversation extends Specable {
     this.frozen = false;
   }
   async sendMessage(
-    content: string,
-    options?: ICAIMessageSending,
+    _content: string,
+    _options?: ICAIMessageSending,
   ): Promise<CAIMessage> {
     // DO NOT touch this. This is abstract/virtual behavior for higher level conversations (DM/Group)
     return new CAIMessage(this.client, this, {});
@@ -246,10 +246,10 @@ export class Conversation extends Specable {
     return await this.fetchMessagesViaQuery(true);
   }
 
-  async rename(newName: string) {
+  async rename(_newName: string) {
     // This is an abstract placeholder for higher level conversations (DM/Group), do not touch
   }
-  async regenerateMessage(message: CAIMessage): Promise<CAIMessage> {
+  async regenerateMessage(_message: CAIMessage): Promise<CAIMessage> {
     // This is an abstract placeholder for higher level conversations (DM/Group), do not touch
     return new CAIMessage(this.client, new Conversation(this.client, {}), {});
   }

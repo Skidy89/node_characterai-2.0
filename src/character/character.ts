@@ -285,6 +285,10 @@ export class Character extends Specable {
   // is_licensed_professional
   @hiddenProperty
   private is_licensed_professional = false;
+  @getterProperty
+  public get isLicensedProfessional() {
+    return this.is_licensed_professional;
+  }
 
   // upvotes
   public upvotes = 0;
@@ -303,7 +307,6 @@ export class Character extends Specable {
   /// features
   async getDMs(
     turnPreviewCount: number = 2,
-    refreshChats: boolean = false,
   ): Promise<any[]> {
     // refresh chats refreshes for get dms, might make longer
     const request = await this.client.requester.request(
@@ -407,7 +410,7 @@ export class Character extends Specable {
 
     return CharacterVote.None;
   }
-  async setVote(vote: CharacterVote) {
+  async setVote() {
     this.client.checkAndThrow(CheckAndThrow.RequiresAuthentication);
     throw new Error("Not available");
   }
@@ -470,8 +473,8 @@ export class Character extends Specable {
 
   // /chat/character/update/
   private async internalEdit(
-    archived: boolean,
-    options?: ICharacterModificationOptions,
+    _isDelete?: boolean,
+    _options?: ICharacterModificationOptions,
   ) {
     this.client.checkAndThrow(CheckAndThrow.RequiresAuthentication);
     throw new Error("Not available");
@@ -484,7 +487,7 @@ export class Character extends Specable {
   }
 
   // persona
-  async setPersonaOverride(personaOrId: string) {
+  async setPersonaOverride(_personaOrId: string) {
     throw new Error("Not available"); // setPersonaOverrideFor removed
   }
   async getPersonaOverride(): Promise<any | undefined> {
@@ -504,6 +507,15 @@ export class Character extends Specable {
     );
 
     ObjectPatcher.patch(this.client, this, information);
+
+    if ("is_licensed_professional" in information)
+      this.is_licensed_professional = information.is_licensed_professional;
+    if ("character_id" in information)
+      this.character_id = information.character_id;
+    if ("character_visibility" in information)
+      this.character_visibility = information.character_visibility;
+    if ("character_translations" in information)
+      this.character_translations = information.character_translations;
   }
 }
 
