@@ -2,7 +2,7 @@ import { CharacterAI, CheckAndThrow } from "../client.js";
 import Parser from "../parser.js";
 import fs from "fs";
 import { getterProperty, hiddenProperty, Specable } from "../utils/specable.js";
-import sharp, { Sharp } from "sharp";
+import { Transformer } from "@napi-rs/image";
 
 const neoImageEndpoint = "https://characterai.io/i/200/static/avatars/";
 const betaImageEndpoint = "https://characterai.io/i/400/static/user/";
@@ -14,7 +14,7 @@ export interface IGeneratedImage {
 
 // class to contain cai related images
 /**
- * Holds a cached manipulated {@link Sharp} image instance to be edited and interacted with.
+ * Holds a cached image transformer to edit and export the image.
  */
 export class CAIImage extends Specable {
   // field is get only
@@ -37,7 +37,7 @@ export class CAIImage extends Specable {
 
   /**
    * Gets full image URL (if available). Often returns into a `.webp` format.
-   * To manipulate, save the file, or do more, use {@link getSharpImage} instead.
+   * To manipulate, save the file, or do more, use {@link getImage} instead.
    */
   public get fullUrl() {
     return this._endpointUrl != ""
@@ -55,11 +55,11 @@ export class CAIImage extends Specable {
 
   // cannot be set
   @hiddenProperty
-  private sharpImage?: Sharp = undefined;
-  // if sharp image is loaded
+  private image?: Transformer = undefined;
+  // if an image is loaded
   @getterProperty
-  public get isSharpImageLoaded() {
-    return this.sharpImage != undefined;
+  public get isImageLoaded() {
+    return this.image != undefined;
   }
 
   // if image is uploaded to cai
@@ -75,27 +75,28 @@ export class CAIImage extends Specable {
   // pipeline:
   // create image or load image:
   // get a buffer
-  // * buffer makes SHARP IMAGE
+  // * buffer makes an image transformer
 
-  private clearSharpImage() {
-    this.sharpImage?.destroy();
-    delete this.sharpImage;
+  private clearImage() {
+    delete this.image;
   }
   /**
-   * Gets a {@link Sharp} image instance to manipulate the image.
-   * @returns Sharp manipulable image
+   * Gets an image transformer to manipulate the image.
+   * @returns Image transformer
    */
-  async getSharpImage(): Promise<Sharp> {
-    if (this.isSharpImageLoaded) return this.sharpImage as Sharp;
+  async getImage(): Promise<Transformer> {
+    if (this.isImageLoaded) return this.image as Transformer;
 
     await this.reloadImage();
-    return this.sharpImage as Sharp;
+    return this.image as Transformer;
   }
 
   // LOADING methods
-  private makeSharpImage(target: Buffer | ArrayBuffer | string) {
-    this.clearSharpImage();
-    this.sharpImage = sharp(target);
+  private makeImage(target: Buffer | ArrayBuffer | string) {
+    this.clearImage();
+    this.image = new Transformer(
+      typeof target === "string" ? fs.readFileSync(target) : Buffer.from(target),
+    );
   }
   private async downloadImageBuffer(
     url: string,
@@ -119,9 +120,9 @@ export class CAIImage extends Specable {
 
     if (!this.canUploadChanges())
       throw new Error("You cannot change this image or upload changes for it.");
-    if (!this.sharpImage) throw new Error("Image not available or not loaded");
+    if (!this.image) throw new Error("Image not available or not loaded");
 
-    const buffer = await this.sharpImage.toBuffer();
+    const buffer = await this.image.png();
 
     const file = new File([buffer as any], "image.png", { type: "image/png" });
 
@@ -156,35 +157,35 @@ export class CAIImage extends Specable {
     await this.changeToEndpointUrl(uploadURL, betaImageEndpoint);
   }
 
-  // THESE CHANGE THE SHARP IMAGE
+  // THESE CHANGE THE IMAGE
   /**
    * Changes the internally stored image cache to a specific url.
    * @param url URL of the image
    * @param headers Additional optional headers
    */
   async changeToUrl(url: string, headers?: Record<string, string>) {
-    this.makeSharpImage(await this.downloadImageBuffer(url, headers));
+    this.makeImage(await this.downloadImageBuffer(url, headers));
   }
   /**
    * Changes the internally stored image cache to a file path.
    * @param path The absolute or relative file path of the image
    */
   public changeToFilePath(path: fs.PathOrFileDescriptor) {
-    this.makeSharpImage(fs.readFileSync(path));
+    this.makeImage(fs.readFileSync(path));
   }
   /**
    * Changes the internally stored image cache to a specific {@link Blob} or {@link File}.
    * @param blobOrFile Blob or File instance
    */
   async changeToBlobOrFile(blobOrFile: Blob | File) {
-    this.makeSharpImage(await blobOrFile.arrayBuffer());
+    this.makeImage(await blobOrFile.arrayBuffer());
   }
   /**
    * Changes the internally stored image cache to a {@link Buffer}.
    * @param buffer Buffer or ArrayBuffer instance
    */
   public changeToBuffer(buffer: Buffer | ArrayBuffer) {
-    this.makeSharpImage(buffer);
+    this.makeImage(buffer);
   }
   /**
    * Changes the internally stored image cache to a related Character.AI endpoint image.
@@ -196,22 +197,22 @@ export class CAIImage extends Specable {
     endpointUrl: string,
     imageEndpoint: string = neoImageEndpoint,
   ) {
-    // first off do this then load the sharpImage
+    // first off do this then load the image
     this.imageEndpoint = imageEndpoint;
     this._endpointUrl = endpointUrl;
 
     // then we download the picture in question
-    this.makeSharpImage(await this.downloadImageBuffer(this.fullUrl));
+    this.makeImage(await this.downloadImageBuffer(this.fullUrl));
   }
 
   // this pre loads the image by storing the endpoint url to later load it
   public changeToEndpointUrlSync(endpointUrl: string) {
-    this.clearSharpImage();
+    this.clearImage();
     this._endpointUrl = endpointUrl;
     this.imageEndpoint = neoImageEndpoint;
   }
 
-  // use this if you fucked up the sharp image and you need a brand new one
+  // use this if you need to restore the original image
   /**
    * Reloads the internally stored image cache to the initial endpoint URL.
    * Use the following method to restore if you had made unwanted changes in the internal image.

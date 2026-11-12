@@ -543,16 +543,19 @@ await image.reloadImage();
 
 ### Image manipulation
 
-The images, like said before are stored locally and store a `Sharp` image instance for you to have fun and edit the actual image, or save it in your hard drive, and more.
+The images are stored locally as `@napi-rs/image` transformers so you can edit them or export them to your hard drive.
 
 ```typescript
-const image = await avatar.getSharpImage();
+import { writeFile } from "node:fs/promises";
 
-// example of modifications, and making it a png file to save it to the hard drive.
-image.rotate(90).png().toFile('./image.png');
+const image = await avatar.getImage();
+
+// Modify the image and save it as a PNG.
+const png = await image.rotate(90).png();
+await writeFile('./image.png', png);
 ```
 
-To read more about `Sharp` and its documentation, [click here](https://sharp.pixelplumbing.com/api-constructor).
+See the [@napi-rs/image documentation](https://image.napi.rs/) for the available image operations.
 
 ### Uploading changes
 
