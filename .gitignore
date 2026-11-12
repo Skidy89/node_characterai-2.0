@@ -1,6 +1,5 @@
 # Node related
 /old/
-/dist/
 /node_modules/
 
 # Testing script

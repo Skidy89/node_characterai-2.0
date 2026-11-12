@@ -1,0 +1,1 @@
+{"version":3,"file":"dmCollection.d.ts","sourceRoot":"","sources":["../../../src/chat/dmCollection.ts"],"names":[],"mappings":"AAAA,OAAO,cAAc,MAAM,qBAAqB,CAAC;AAEjD,MAAM,CAAC,OAAO,WAAW,aAAa;IACpC,YAAY,EAAE,MAAM,CAAC;IAErB,aAAa,EAAE,cAAc,EAAE,CAAC;IAChC,qBAAqB,EAAE,cAAc,EAAE,CAAC;IACxC,gBAAgB,EAAE,cAAc,CAAC;IACjC,gBAAgB,EAAE,cAAc,EAAE,CAAC;CACpC"}

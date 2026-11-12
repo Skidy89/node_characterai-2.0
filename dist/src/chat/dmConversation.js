@@ -1,0 +1,199 @@
+import { CheckAndThrow } from "../client.js";
+import Parser from "../parser.js";
+import Warnings from "../warnings.js";
+import { Conversation } from "./conversation.js";
+import { CAIMessage } from "./message.js";
+import { v4 as uuidv4 } from "uuid";
+const generateBaseMessagePayload = (characterId, username) => {
+    return {
+        character_id: characterId,
+        selected_language: "",
+        tts_enabled: false,
+        user_name: username,
+        previous_annotations: {
+            boring: 0,
+            not_boring: 0,
+            inaccurate: 0,
+            not_inaccurate: 0,
+            repetitive: 0,
+            not_repetitive: 0,
+            out_of_character: 0,
+            not_out_of_character: 0,
+            bad_memory: 0,
+            not_bad_memory: 0,
+            long: 0,
+            not_long: 0,
+            short: 0,
+            not_short: 0,
+            ends_chat_early: 0,
+            not_ends_chat_early: 0,
+            funny: 0,
+            not_funny: 0,
+            interesting: 0,
+            not_interesting: 0,
+            helpful: 0,
+            not_helpful: 0,
+        },
+    };
+};
+const generateBaseSendingPayload = (message, characterId, username, turnId, chatId, userId, attachments) => {
+    return {
+        ...generateBaseMessagePayload(characterId, username),
+        num_candidates: 1,
+        turn: {
+            turn_key: {
+                turn_id: turnId,
+                chat_id: chatId,
+            },
+            author: {
+                author_id: userId.toString(),
+                is_human: true,
+                name: username,
+            },
+            candidates: [
+                {
+                    candidate_id: turnId,
+                    raw_content: message,
+                },
+            ],
+            primary_candidate_id: turnId,
+        },
+        ...(attachments?.length ? { attachments } : {}),
+    };
+};
+const generateBaseRegeneratingPayload = (characterId, turnId, username, // our username
+chatId) => {
+    return {
+        ...generateBaseMessagePayload(characterId, username),
+        turn_key: { turn_id: turnId, chat_id: chatId },
+    };
+};
+export default class DMConversation extends Conversation {
+    async resurrect() {
+        const resurectionRequest = await this.client.requester.request(`https://neo.character.ai/chats/recent/${this.chatId}`, {
+            method: "GET",
+            includeAuthorization: true,
+        });
+        const resurectionResponse = await Parser.parseJSON(resurectionRequest);
+        if (!resurectionRequest.ok)
+            throw new Error(resurectionResponse);
+    }
+    async archive() {
+        this.client.checkAndThrow(CheckAndThrow.RequiresAuthentication);
+        const request = await this.client.requester.request(`https://neo.character.ai/chat/${this.chatId}/archive`, {
+            method: "PATCH",
+            includeAuthorization: true,
+            contentType: "application/json",
+        });
+        const response = await Parser.parseJSON(request);
+        if (!request.ok)
+            throw new Error(response);
+    }
+    async unarchive(refreshMessagesAfter = true) {
+        this.client.checkAndThrow(CheckAndThrow.RequiresAuthentication);
+        const request = await this.client.requester.request(`https://neo.character.ai/chat/${this.chatId}/unarchive`, {
+            method: "PATCH",
+            includeAuthorization: true,
+            contentType: "application/json",
+        });
+        const response = await Parser.parseJSON(request);
+        if (!request.ok)
+            throw new Error(response);
+        if (!refreshMessagesAfter)
+            return;
+        await this.resurrect();
+        await this.refreshMessages();
+    }
+    async duplicate() {
+        await this.refreshMessages();
+        const lastMessage = this.getLastMessage();
+        if (!lastMessage)
+            throw new Error("You must have atleast one message in the conversation to do this");
+        return (await lastMessage.copyFromHere(true));
+    }
+    async rename(newName) {
+        this.client.checkAndThrow(CheckAndThrow.RequiresAuthentication);
+        const request = await this.client.requester.request(`https://neo.character.ai/chat/${this.chatId}/update_name`, {
+            method: "PATCH",
+            includeAuthorization: true,
+            body: Parser.stringify({ name: newName }),
+            contentType: "application/json",
+        });
+        const response = await Parser.parseJSON(request);
+        if (!request.ok)
+            throw new Error(response);
+    }
+    async uploadImageToServer(input) {
+        this.client.checkAndThrow(CheckAndThrow.RequiresAuthentication);
+        let data;
+        let contentType = "image/jpeg";
+        if (typeof input === "string") {
+            const response = await fetch(input);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch image: ${response.status}`);
+            }
+            contentType = response.headers.get("content-type") ?? "image/jpeg";
+            data = Buffer.from(await response.arrayBuffer());
+        }
+        else {
+            data = input;
+        }
+        const image = new Blob([data], {
+            type: contentType,
+        });
+        const uploadRequest = await this.client.requester.request("https://neo.character.ai/image/upload_private_image", {
+            method: "POST",
+            includeAuthorization: true,
+            formData: {
+                image,
+            },
+        });
+        const uploadResponse = await Parser.parseJSON(uploadRequest);
+        if (uploadResponse.status !== "OK") {
+            throw new Error("Image upload failed");
+        }
+        return {
+            status: uploadResponse.status,
+            value: uploadResponse.value,
+        };
+    }
+    async sendMessage(content, options, context) {
+        this.client.checkAndThrow(CheckAndThrow.RequiresAuthentication);
+        if (this.frozen) {
+            Warnings.show("sendingFrozen");
+        }
+        const turnId = uuidv4();
+        const attachments = context?.image
+            ? [
+                {
+                    type: "TYPE_IMAGE",
+                    url: context.image.value,
+                },
+            ]
+            : undefined;
+        const payload = generateBaseSendingPayload(content, this.characterId, this.client.myProfile.username, turnId, this.chatId, this.client.myProfile.userId, attachments);
+        const request = await this.client.sendDMWebsocketCommandAsync({
+            command: (options?.manualTurn ?? false)
+                ? "create_chat"
+                : "create_and_generate_turn",
+            originId: "Android",
+            expectedReturnCommand: undefined,
+            waitForAIResponse: true,
+            streaming: false,
+            payload,
+        }, this);
+        return this.addMessage(new CAIMessage(this.client, this, request.turn));
+    }
+    async regenerateMessage(message) {
+        this.client.checkAndThrow(CheckAndThrow.RequiresAuthentication);
+        const request = await this.client.sendDMWebsocketCommandAsync({
+            command: "generate_turn_candidate",
+            originId: "Android",
+            streaming: false,
+            payload: generateBaseRegeneratingPayload(this.characterId, message.turnId, this.client.myProfile.username, this.chatId),
+        });
+        message.indexTurn(request.turn);
+        return message;
+    }
+}
+//# sourceMappingURL=dmConversation.js.map
