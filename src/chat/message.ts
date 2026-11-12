@@ -32,6 +32,10 @@ export class CAIMessage extends Specable {
   public get chatId() {
     return this.turnKey.chatId;
   }
+  @getterProperty
+  public get text(): string {
+    return this.text;
+  }
 
   // create_time
   @hiddenProperty

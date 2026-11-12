@@ -28,6 +28,9 @@ export class CAIMessage extends Specable {
     get chatId() {
         return this.turnKey.chatId;
     }
+    get text() {
+        return this.text;
+    }
     // create_time
     create_time = "";
     get creationDate() {
@@ -319,6 +322,9 @@ __decorate([
 __decorate([
     getterProperty
 ], CAIMessage.prototype, "chatId", null);
+__decorate([
+    getterProperty
+], CAIMessage.prototype, "text", null);
 __decorate([
     hiddenProperty
 ], CAIMessage.prototype, "create_time", void 0);

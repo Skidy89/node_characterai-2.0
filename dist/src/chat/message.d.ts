@@ -13,6 +13,7 @@ export declare class CAIMessage extends Specable {
     };
     get turnId(): string;
     get chatId(): any;
+    get text(): string;
     private create_time;
     get creationDate(): Date;
     private last_update_time;
